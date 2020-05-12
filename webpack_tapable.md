@@ -2,60 +2,60 @@
 
 ## tapable分类
 
-1、按同步异步分类
+### 1、按同步异步分类
 
-Async：
+`Async：`
 
 异步并行
 
-AsyncParallelHook
+- AsyncParallelHook
 
-AsyncParallelBailHook
+- AsyncParallelBailHook
 
 异步串行
 
-AsyncSeriesHook
+- AsyncSeriesHook
 
-AsyncSeriesBailHook
+- AsyncSeriesBailHook
 
-AsyncSeriesWaterfallHook
+- AsyncSeriesWaterfallHook
 
-Sync: 
+`Sync: `
 
-SyncHook
+- SyncHook
 
-SyncBailHook
+- SyncBailHook
 
-SyncWaterfallHook
+- SyncWaterfallHook
 
-SyncLoopHook
+- SyncLoopHook
 
 2、按值返回分类
 
-Bail:  关心返回值（当函数的返回值不为null，熔断操作）
+`Bail:  关心返回值（当函数的返回值不为null，熔断操作）`
 
-SyncBailHook
+- SyncBailHook
 
-AsyncParallelBailHook
+- AsyncParallelBailHook
 
-AsyncSeriesBailHook
+- AsyncSeriesBailHook
 
-Basic:  不关心返回值
+`Basic:  不关心返回值`
 
-SyncHook
+- SyncHook
 
-AsyncParallelHook
+- AsyncParallelHook
 
-AsyncSeriesHook
+- AsyncSeriesHook
 
-Loop:  循环执行
+`Loop:  循环执行`
 
-SyncLoopHook
+- SyncLoopHook
 
-Waterfall:  上一步是下一步的输入
+`Waterfall:  上一步是下一步的输入`
 
-SyncWaterfallHook
+- SyncWaterfallHook
 
-AsyncSeriesWaterfallHook
+- AsyncSeriesWaterfallHook
 
 
