@@ -64,19 +64,48 @@
 
 `Async：`
 
-异步并行 同步的钩子指支持 `tap` 注册方式
+> 凡是带有Async关键字的钩子都支持三种注册方式：
+
+> tap、tapAsync、tapPromise 监听
+
+> tap、tapAsync 这两种用 hook.callAsync() 触发
+
+> tapPromise 用hook.promise()触发
 
 - AsyncParallelHook
+  异步并行
+
+  1. tapAsync这种情况，回调比参数列表传入的参数多了一个callback参数。等异步执行时间最长的那个返回就结束。
+
+  2. tapPromise这种情况，每一步返回的是个promise。因为是promise，所以可以then。
 
 - AsyncParallelBailHook
-
-异步串行
+  异步并行 失败钩子
+  
+  1. 带保险的异步并行执行钩子
+  
+  2. 有一个任务返回值不为undefined就直接结束
+  
+  当触发失败就结束任务。reject('err')或者callback('有值')即可触发.
 
 - AsyncSeriesHook
+  异步串行
+  
+  执行时间是总和。执行看起来和同步差不多，但是支持异步代码而已。
 
 - AsyncSeriesBailHook
+  异步串行 失败钩子
+  
+  执行时间是总和，触发失败就立即结束。
 
 - AsyncSeriesWaterfallHook
+  异步串行瀑布 (异步、串行、上一个的返回值作为下一个的输入)
+  
+  如何返回值：
+
+  1. tapAsync的情况：凡是异步callback，第一个参数表示的是有没有错误，如果为null表示没有错，否则有错。第二个参数才是正确的返回值。
+  
+  2. tapPromise的情况：resolve传出成功的值。如果resolve你没有传值，那么还是初始传入的值，如果resolve里传了值，则为你传入的值。
 
 2、按值返回分类
 
@@ -111,6 +140,6 @@
 
 let hook = new XXXHook()
 
-hook.tap()  监听事件
+hook.tap() / hook.tapAsync() / hook.tapPromise()  监听事件
 
-hook.call()  触发事件
+hook.call() / hook.callAsyc() / hook.promise()  触发事件
