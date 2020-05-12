@@ -1,4 +1,5 @@
 # webpack tapable
+是webpack运转的核心，整个架构都是基于这个来实现的
 
 ## tapable分类
 
@@ -32,7 +33,7 @@
 
 2、按值返回分类
 
-`Bail:  关心返回值（当函数的返回值不为null，熔断操作）`
+`Bail:  关心返回值（当遇到第一个结果 result !== undefined 则返回，不再继续执行。熔断操作）`
 
 - SyncBailHook
 
@@ -40,7 +41,7 @@
 
 - AsyncSeriesBailHook
 
-`Basic:  不关心返回值`
+`Basic:  不关心返回值，一个个执行`
 
 - SyncHook
 
@@ -48,14 +49,21 @@
 
 - AsyncSeriesHook
 
-`Loop:  循环执行`
+`Loop:  不停的循环执行事件函数，直到所有的结果 result===undefined`
 
 - SyncLoopHook
 
-`Waterfall:  上一步是下一步的输入`
+`Waterfall:  瀑布。上一步的结果是下一步的输入`
 
 - SyncWaterfallHook
 
 - AsyncSeriesWaterfallHook
 
 
+### 2、使用：类似于event类
+
+let hook = new XXXHook()
+
+hook.tap()  监听事件
+
+hook.call()  触发事件
