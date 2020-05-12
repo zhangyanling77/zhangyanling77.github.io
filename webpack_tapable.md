@@ -64,9 +64,9 @@
 
 `Async：`
 
-> 凡是带有Async关键字的钩子都支持三种注册方式：\n
-> tap、tapAsync、tapPromise 监听 \n
-> tap、tapAsync 这两种用 hook.callAsync() 触发\n
+> 凡是带有Async关键字的钩子都支持三种注册方式：
+> tap、tapAsync、tapPromise 监听;
+> tap、tapAsync 这两种用 hook.callAsync() 触发;
 > tapPromise 用hook.promise()触发
 
 - AsyncParallelHook
