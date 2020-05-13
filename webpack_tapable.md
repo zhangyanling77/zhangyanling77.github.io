@@ -142,3 +142,106 @@ hook.tap() / hook.tapAsync() / hook.tapPromise()  监听事件
 
 hook.call() / hook.callAsyc() / hook.promise()  触发事件
 ```
+
+## tapable的实现
+核心：注册监听函数，触发执行
+
+### 1、基类Hook
+```javascript
+/**
+* args: 传入的参数列表，如['name', 'age']
+* taps: 用来存放钩子回调函数的数组
+* _x: 用来拼函数的
+*/
+class Hook {
+    constructor(args) {
+        if (!Array.isArray(args)) args = [];
+        this.args = args;// Hook类的实例 this.args = args=['name','age']
+        this.taps = [];// 这是存放钩子回调函数的数组
+        this._x = undefined;//后面会用到，是用来拼函数的
+    }
+    tap(options, fn) {
+        if (typeof options === 'string') options = { name: options };
+        options.fn = fn;//options = {name:'1',fn:function1};
+        this._insert(options);
+    }
+    tapAsync(options, fn) {
+        if (typeof options === 'string') options = { name: options };
+        options.fn = fn;//options = {name:'1',fn:function1};
+        this._insert(options);
+    }
+    _insert(options) {
+        this.taps[this.taps.length] = options;//= this.taps.push(options);
+    }
+    call(...args) {// args=['zhufeng',10]
+        //第一个动态编译出来一个函数
+        let callMethod = this._createCall();//(function anonymous(name, age) {})
+        return callMethod.apply(this, args);;
+    }
+    callAsync(...args) {// args=['zhufeng',10]
+        //第一个动态编译出来一个函数
+        let callMethod = this._createCall();//(function anonymous(name, age) {})
+        return callMethod.apply(this, args);;
+    }
+    _createCall() {
+        return this.compile({
+            taps: this.taps,//监听函数 [{name:'1',fn:function1},{name:'2',fn:function2}]
+            args: this.args//['name','age']
+        });
+    }
+}
+module.exports = Hook;
+```
+### 2、HookCodeFactory 工厂函数
+```javascript
+class HookCodeFactory {
+    setup(hookInstance, options) {
+        this.options = options;//{args,taps}args=[name,age]
+        //[ {name:'1',fn:function1}, {name:'2',fn:function2}]
+        hookInstance._x = options.taps.map(t => t.fn);//fn的数组 [function1,function2]
+    }
+    args({ before, after } = {}) {
+        let allArgs = this.options.args || [];//[name,age]
+        if (before) allArgs = [before, ...allArgs];
+        if (after) allArgs = [...allArgs, after];
+        return allArgs.join(',');//name,age,_callback
+    }
+    header() {
+        return `var _x = this._x;\n`;
+    }
+    content() {
+        let code = ``;
+        for (let i = 0; i < this.options.taps.length; i++) {
+            code += `
+                    var _fn${i} = _x[${i}];
+                    _fn${i}(${this.args()});
+                    `
+        }
+        return code;
+    }
+    create() {
+        return new Function(
+            this.args(),
+            this.header() + this.content()
+        );
+    }
+}
+module.exports = HookCodeFactory;
+```
+### 3、SyncHook 
+```javascript
+let HookCodeFactory = require('./HookCodeFactory');
+let Hook = require('./Hook');
+
+const factory = new HookCodeFactory();
+class SyncHook extends Hook {
+    constructor(args) {
+        super(args);
+    }
+    compile(options) {//{taps,args}
+        factory.setup(this, options);//做一些工厂准备工作
+        return factory.create(options);//真正创建函数的 (function anonymous(name, age) {}
+    }
+}
+module.exports = SyncHook;
+```
