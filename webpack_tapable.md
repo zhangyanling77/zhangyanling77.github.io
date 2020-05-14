@@ -245,3 +245,47 @@ class SyncHook extends Hook {
 }
 module.exports = SyncHook;
 ```
+### 4、AsyncParallelHook.js
+```javascript
+let HookCodeFactory = require('./HookCodeFactory');
+let Hook = require('./Hook');
+
+class AsyncParallelHookCodeFactory extends HookCodeFactory {
+    create() {
+        return new Function(
+            this.args({ after: '_callback' }),
+            this.header() + this.content()
+        );
+    }
+    // 重写父类方法
+    content() {
+        let code = `
+            var _counter = ${this.options.taps.length};
+            var _done = () => {
+                _callback();
+            };
+        `;
+        for (let i = 0; i < this.options.taps.length; i++) {
+            code += `
+            var _fn${i} = _x[${i}];
+            _fn${i}(name, age, _err${i} => {
+                if (--_counter === 0) _done();
+            });
+                    `
+        }
+        return code;
+    }
+}
+
+const factory = new AsyncParallelHookCodeFactory();
+class AsyncParallelHook extends Hook {
+    constructor(args) {
+        super(args);
+    }
+    compile(options) {//{taps,args}
+        factory.setup(this, options);//做一些工厂准备工作
+        return factory.create(options);//真正创建函数的 (function anonymous(name, age) {}
+    }
+}
+module.exports = AsyncParallelHook;
+```
